@@ -4,9 +4,33 @@
   gap: 10px;
 }
 
-.page-title {
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 5px;
-  color: var(--primary-dark);
+}
+
+.settings-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.lock-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  color: #999;
+}
+
+.lock-btn.locked {
+  color: var(--danger-color);
+  background-color: rgba(244, 67, 54, 0.05);
 }
 
 .settings-card {
@@ -28,9 +52,25 @@
 }
 
 .form-group label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
+}
+
+.form-group select,
+.form-group input {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.form-group select:disabled,
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
 }
 
 .dashboard-grid {

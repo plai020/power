@@ -18,7 +18,7 @@
 
 .setting-group label {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .setting-group input {
@@ -29,9 +29,10 @@
   background-color: var(--surface-color);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  padding: 10px 20px;
+  padding: 12px 20px;
   border-radius: var(--radius-md);
   font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
   width: 100%;
   display: flex;

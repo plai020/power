@@ -3,9 +3,9 @@ import {
   format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Trash2, Calculator } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { calculateDailyUsage } from '../utils/calculations';
+import { calculateDailyUsage, calculateElectricityCost } from '../utils/calculations';
 import './Calendar.css';
 
 const DAYS = ['日', '一', '二', '三', '四', '五', '六'];
@@ -16,8 +16,13 @@ export default function CalendarPage() {
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
+  const [showCalcModal, setShowCalcModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ date: '', time: '12:00', reading: '', note: '' });
+
+  // Calculator State
+  const [calcData, setCalcData] = useState({ startDate: '', endDate: '', usage: '' });
+  const [calcResult, setCalcResult] = useState(null);
 
   const usageMap = useMemo(() => calculateDailyUsage(meterReadings), [meterReadings]);
 
@@ -129,11 +134,18 @@ export default function CalendarPage() {
     setShowModal(false);
   };
 
-  const handleDelete = () => {
-    if (window.confirm('確定要刪除這筆紀錄嗎？')) {
-      deleteMeterReading(formData.date);
-      setShowModal(false);
-    }
+  const handleCalcSubmit = (e) => {
+    e.preventDefault();
+    const { startDate, endDate, usage } = calcData;
+    if (!startDate || !endDate || !usage) return;
+    const cost = calculateElectricityCost(parseInt(usage), startDate, endDate, priceConfig);
+    setCalcResult(cost);
+  };
+
+  const handleCalcClick = () => {
+    setCalcData({ startDate: '', endDate: '', usage: '' });
+    setCalcResult(null);
+    setShowCalcModal(true);
   };
 
   return (
@@ -164,9 +176,68 @@ export default function CalendarPage() {
         {renderCells()}
       </div>
 
-      <button className="fab-button" onClick={handleAddClick}>
-        <Plus size={32} />
-      </button>
+      <div className="fab-group">
+        <button className="fab-button calc-fab" onClick={handleCalcClick}>
+          <Calculator size={28} />
+        </button>
+        <button className="fab-button add-fab" onClick={handleAddClick}>
+          <Plus size={32} />
+        </button>
+      </div>
+
+      {showCalcModal && (
+        <div className="modal-overlay" onClick={() => setShowCalcModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>試算電費 (不儲存)</h2>
+              <button className="close-btn" onClick={() => setShowCalcModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <form className="modal-form" onSubmit={handleCalcSubmit}>
+              <div className="form-group">
+                <label>起算日</label>
+                <input 
+                  type="date" 
+                  required
+                  value={calcData.startDate}
+                  onChange={e => setCalcData({...calcData, startDate: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>結算日</label>
+                <input 
+                  type="date" 
+                  required
+                  value={calcData.endDate}
+                  onChange={e => setCalcData({...calcData, endDate: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>使用度數</label>
+                <input 
+                  type="number" 
+                  required
+                  placeholder="輸入度數"
+                  value={calcData.usage}
+                  onChange={e => setCalcData({...calcData, usage: e.target.value})}
+                />
+              </div>
+              
+              <button type="submit" className="btn-primary" style={{marginTop: '10px'}}>
+                開始試算
+              </button>
+
+              {calcResult !== null && (
+                <div className="calc-result-box">
+                  <div className="result-label">試算電費結果：</div>
+                  <div className="result-value">${calcResult}</div>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>

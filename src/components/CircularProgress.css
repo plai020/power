@@ -24,20 +24,20 @@
 }
 
 .circular-progress-content .value {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
   line-height: 1.2;
 }
 
 .circular-progress-content .label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-main);
   font-weight: 600;
   margin-top: 4px;
 }
 
 .circular-progress-content .sub-label {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
 }

@@ -42,7 +42,8 @@
 }
 
 .calendar-cell {
-  aspect-ratio: 1;
+  min-height: 80px;
+  aspect-ratio: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,11 +79,11 @@
 
 .cell-date {
   font-weight: 500;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .cell-usage {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--primary-dark);
   font-weight: bold;
 }
@@ -91,24 +92,32 @@
   color: var(--danger-color);
 }
 
-.fab-button {
+.fab-group {
   position: fixed;
-  bottom: 90px; /* Above BottomNav */
-  right: 20px;
-  width: 56px;
-  height: 56px;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 100;
+}
+
+.fab-button {
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background-color: var(--primary-color);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border: none;
+  cursor: pointer;
 }
 
-.fab-button:hover {
-  transform: scale(1.05);
+.calc-fab {
+  background-color: var(--info-color);
 }
 
 /* Modal */
@@ -156,7 +165,40 @@
 .modal-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
+}
+
+.modal-form .form-group label {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.modal-form .form-group input {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.calc-result-box {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.result-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.result-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary-color);
 }
 
 .modal-actions {

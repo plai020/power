@@ -32,7 +32,15 @@ export const AppProvider = ({ children }) => {
 
   const [periodDates, setPeriodDates] = useState(() => {
     const saved = localStorage.getItem('periodDates');
-    return saved ? JSON.parse(saved) : { startDate: '', endDate: '' };
+    const currentYear = new Date().getFullYear().toString();
+    const currentMonth = (new Date().getMonth() + 1).toString();
+    return saved ? JSON.parse(saved) : { 
+      startDate: '', 
+      endDate: '', 
+      billYear: currentYear, 
+      billMonth: currentMonth,
+      isLocked: false 
+    };
   });
 
   // Mock remote data for now

@@ -12,12 +12,13 @@
 
 .toggle-btn {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   background-color: var(--surface-color);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   border-radius: var(--radius-md);
   font-weight: 600;
+  font-size: 16px;
 }
 
 .toggle-btn.active {
@@ -40,10 +41,10 @@
 }
 
 .stats-table th, .stats-table td {
-  padding: 10px 12px;
+  padding: 12px 14px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .stats-table th {

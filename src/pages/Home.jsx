@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, subDays } from 'date-fns';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Lock, Unlock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import CircularProgress from '../components/CircularProgress';
 import { calculateElectricityCost, calculateBudgetForRange } from '../utils/calculations';
@@ -11,12 +11,7 @@ export default function Home() {
   const { meterReadings, priceConfig, getBudgetForDate, addSettledBill, periodDates, setPeriodDates } = useAppContext();
   const navigate = useNavigate();
 
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
-
-  const [billYear, setBillYear] = useState(currentYear.toString());
-  const [billMonth, setBillMonth] = useState(currentMonth.toString());
-  const { startDate, endDate } = periodDates;
+  const { startDate, endDate, billYear, billMonth, isLocked } = periodDates;
 
   // Check if Start Date - 1 day has a reading
   const isMissingStartReading = useMemo(() => {
@@ -100,32 +95,64 @@ export default function Home() {
     alert('已成功結算並儲存至統計頁面！');
     
     // Clear fields
-    setBillYear('');
-    setBillMonth('');
-    setPeriodDates({ startDate: '', endDate: '' });
+    const currentYear = new Date().getFullYear().toString();
+    const currentMonth = (new Date().getMonth() + 1).toString();
+    setPeriodDates({ 
+      startDate: '', 
+      endDate: '', 
+      billYear: currentYear, 
+      billMonth: currentMonth,
+      isLocked: false 
+    });
     navigate('/statistics');
   };
 
+  const toggleLock = () => {
+    setPeriodDates({ ...periodDates, isLocked: !isLocked });
+  };
+
+  const handleYearChange = (val) => {
+    if (!isLocked) setPeriodDates({ ...periodDates, billYear: val });
+  };
+
+  const handleMonthChange = (val) => {
+    if (!isLocked) setPeriodDates({ ...periodDates, billMonth: val });
+  };
+
+  const currentYearNum = new Date().getFullYear();
+
   return (
     <div className="home-page">
-      <h1 className="page-title">首頁儀表板</h1>
-
       <div className="card settings-card">
+        <div className="settings-header">
+          <h2 className="settings-title">帳單期間設定</h2>
+          <button className={`lock-btn ${isLocked ? 'locked' : ''}`} onClick={toggleLock}>
+            {isLocked ? <Lock size={20} /> : <Unlock size={20} />}
+          </button>
+        </div>
         <div className="form-row">
           <div className="form-group">
             <label>帳單年</label>
-            <select value={billYear} onChange={(e) => setBillYear(e.target.value)}>
+            <select 
+              value={billYear} 
+              onChange={(e) => handleYearChange(e.target.value)}
+              disabled={isLocked}
+            >
               <option value="">請選擇</option>
               {[0, 1, 2].map(offset => (
-                <option key={currentYear - offset} value={currentYear - offset}>
-                  {currentYear - offset}年
+                <option key={currentYearNum - offset} value={currentYearNum - offset}>
+                  {currentYearNum - offset}年
                 </option>
               ))}
             </select>
           </div>
           <div className="form-group">
             <label>帳單月</label>
-            <select value={billMonth} onChange={(e) => setBillMonth(e.target.value)}>
+            <select 
+              value={billMonth} 
+              onChange={(e) => handleMonthChange(e.target.value)}
+              disabled={isLocked}
+            >
               <option value="">請選擇</option>
               {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                 <option key={m} value={m}>{m}月</option>
@@ -140,7 +167,8 @@ export default function Home() {
             <input 
               type="date" 
               value={startDate} 
-              onChange={(e) => setPeriodDates({ ...periodDates, startDate: e.target.value })} 
+              onChange={(e) => !isLocked && setPeriodDates({ ...periodDates, startDate: e.target.value })} 
+              disabled={isLocked}
             />
           </div>
           <div className="form-group">
@@ -148,7 +176,8 @@ export default function Home() {
             <input 
               type="date" 
               value={endDate} 
-              onChange={(e) => setPeriodDates({ ...periodDates, endDate: e.target.value })} 
+              onChange={(e) => !isLocked && setPeriodDates({ ...periodDates, endDate: e.target.value })} 
+              disabled={isLocked}
             />
           </div>
         </div>

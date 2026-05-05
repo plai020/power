@@ -96,7 +96,6 @@ export default function Export() {
 
   return (
     <div className="export-page">
-      <h1 className="page-title">設定與匯出</h1>
 
       <div className="card setting-section">
         <h2>Google Sheets 整合</h2>

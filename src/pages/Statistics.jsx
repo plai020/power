@@ -128,7 +128,6 @@ export default function Statistics() {
 
   return (
     <div className="statistics-page">
-      <h1 className="page-title">統計資料</h1>
 
       <div className="view-toggles">
         <button 
