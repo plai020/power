@@ -28,62 +28,67 @@ export default function Statistics() {
   const { settledBills, deleteSettledBill, updateSettledBill } = useAppContext();
   const [showTable, setShowTable] = useState(true);
   const [showCharts, setShowCharts] = useState(true);
-  const [hideDates, setHideDates] = useState(true);
+  const [hideDetails, setHideDetails] = useState(true); // 修正變數名稱一致性
+  const [editingId, setEditingId] = useState(null); // 補齊遺失狀態
+  const [editValues, setEditValues] = useState({ actualUsage: '', actualCost: '', note: '' }); // 補齊遺失狀態
 
   const handleDelete = (id) => {
     if (window.confirm('確定要刪除這筆結算資料嗎？')) {
       deleteSettledBill(id);
+      if (editingId === id) cancelEditing();
     }
   };
 
   const startEditing = (bill) => {
-    setEditingId(bill.id);
+    setEditingId(bill?.id);
     setEditValues({
-      actualUsage: bill.actualUsage || '',
-      actualCost: bill.actualCost || '',
-      note: bill.note || ''
+      actualUsage: bill?.actualUsage || '',
+      actualCost: bill?.actualCost || '',
+      note: bill?.note || ''
     });
   };
 
   const cancelEditing = () => {
     setEditingId(null);
-    setEditValues({});
+    setEditValues({ actualUsage: '', actualCost: '', note: '' });
   };
 
   const saveEditing = (id) => {
-    const bill = settledBills.find(b => b.id === id);
+    const bill = settledBills?.find(b => b.id === id);
     if (bill) {
       updateSettledBill({ ...bill, ...editValues });
     }
     setEditingId(null);
-    setEditValues({});
+    setEditValues({ actualUsage: '', actualCost: '', note: '' });
   };
 
   // Chart Data Preparation
   const chartData = useMemo(() => {
+    if (!settledBills || settledBills.length === 0) return null;
+
     // Sort by year, month ascending to find the last 6 periods
-    const sorted = [...settledBills].sort((a, b) => {
-      if (a.year !== b.year) return a.year - b.year;
-      return a.month - b.month;
+    const sorted = [...(settledBills || [])].sort((a, b) => {
+      if (a?.year !== b?.year) return (a?.year || 0) - (b?.year || 0);
+      return (a?.month || 0) - (b?.month || 0);
     });
 
     // Get last 6 unique periods (year/month)
     const recent6 = sorted.slice(-6);
-    const labels = recent6.map(b => `${b.year}/${b.month}`);
+    const labels = recent6.map(b => `${b?.year || ''}/${b?.month || ''}`);
     
     // This year data (actual usage)
-    const usageDataThisYear = recent6.map(b => b.actualUsage || b.calculatedUsage || 0); // fallback to calculated if actual is missing
-    const costDataThisYear = recent6.map(b => b.actualCost || b.calculatedCost || 0);
+    const usageDataThisYear = recent6.map(b => b?.actualUsage || b?.calculatedUsage || 0); 
+    const costDataThisYear = recent6.map(b => b?.actualCost || b?.calculatedCost || 0);
 
-    // To get last year, we would need to find bills where year = b.year - 1 and month = b.month
+    // To get last year
     const usageDataLastYear = recent6.map(b => {
-      const lastYearBill = settledBills.find(old => old.year === b.year - 1 && old.month === b.month);
-      return lastYearBill ? (lastYearBill.actualUsage || lastYearBill.calculatedUsage || 0) : null;
+      const lastYearBill = settledBills?.find(old => old?.year === b?.year - 1 && old?.month === b?.month);
+      return lastYearBill ? (lastYearBill?.actualUsage || lastYearBill?.calculatedUsage || 0) : null;
     });
     
     const costDataLastYear = recent6.map(b => {
-      const lastYearBill = settledBills.find(old => old.year === b.year - 1 && old.month === b.month);
-      return lastYearBill ? (lastYearBill.actualCost || lastYearBill.calculatedCost || 0) : null;
+      const lastYearBill = settledBills?.find(old => old?.year === b?.year - 1 && old?.month === b?.month);
+      return lastYearBill ? (lastYearBill?.actualCost || lastYearBill?.calculatedCost || 0) : null;
     });
 
     return {
@@ -183,19 +188,19 @@ export default function Statistics() {
               </tr>
             </thead>
             <tbody>
-              {settledBills.map(bill => {
-                const actualUsageNum = parseFloat(bill.actualUsage) || 0;
-                const actualCostNum = parseFloat(bill.actualCost) || 0;
+              {settledBills?.map(bill => {
+                const actualUsageNum = parseFloat(bill?.actualUsage) || 0;
+                const actualCostNum = parseFloat(bill?.actualCost) || 0;
                 const avgCost = actualUsageNum > 0 ? (actualCostNum / actualUsageNum).toFixed(2) : '0.00';
-                const isEditing = editingId === bill.id;
+                const isEditing = editingId === bill?.id;
 
                 return (
-                  <tr key={bill.id}>
-                    <td className="text-center font-bold">{bill.year}/{bill.month}</td>
-                    {!hideDetails && <td className="text-center">{bill.startDate.substring(5)}</td>}
-                    {!hideDetails && <td className="text-center">{bill.endDate.substring(5)}</td>}
-                    <td className="text-center">{bill.calculatedUsage?.toLocaleString()}</td>
-                    <td className="text-center">${bill.calculatedCost?.toLocaleString()}</td>
+                   <tr key={bill?.id}>
+                    <td className="text-center font-bold">{bill?.year}/{bill?.month}</td>
+                    {!hideDetails && <td className="text-center">{bill?.startDate?.substring(5)}</td>}
+                    {!hideDetails && <td className="text-center">{bill?.endDate?.substring(5)}</td>}
+                    <td className="text-center">{bill?.calculatedUsage?.toLocaleString()}</td>
+                    <td className="text-center">${bill?.calculatedCost?.toLocaleString()}</td>
                     
                     {/* 實際度數 */}
                     <td className="text-center">
@@ -237,7 +242,7 @@ export default function Statistics() {
                             onChange={(e) => setEditValues({ ...editValues, note: e.target.value })}
                           />
                         ) : (
-                          <span className="text-small">{bill.note || '-'}</span>
+                          <span className="text-small">{bill?.note || '-'}</span>
                         )}
                       </td>
                     )}
@@ -246,7 +251,7 @@ export default function Statistics() {
                       <div className="action-btns">
                         {isEditing ? (
                           <>
-                            <button className="action-btn success" onClick={() => saveEditing(bill.id)}>
+                            <button className="action-btn success" onClick={() => saveEditing(bill?.id)}>
                               <Check size={18} />
                             </button>
                             <button className="action-btn danger" onClick={cancelEditing}>
@@ -258,7 +263,7 @@ export default function Statistics() {
                             <button className="action-btn info" onClick={() => startEditing(bill)}>
                               <Edit2 size={18} />
                             </button>
-                            <button className="action-btn danger" onClick={() => handleDelete(bill.id)}>
+                            <button className="action-btn danger" onClick={() => handleDelete(bill?.id)}>
                               <Trash2 size={18} />
                             </button>
                           </>
@@ -268,7 +273,7 @@ export default function Statistics() {
                   </tr>
                 );
               })}
-              {settledBills.length === 0 && (
+              {(!settledBills || settledBills.length === 0) && (
                 <tr>
                   <td colSpan={hideDetails ? "7" : "10"} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
                     目前尚無結算資料

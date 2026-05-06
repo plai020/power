@@ -92,12 +92,29 @@
   color: var(--danger-color);
 }
 
+.calendar-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 85px); /* 扣除底部導覽列高度 */
+  overflow: hidden; /* 隱藏外層捲軸 */
+}
+
+.calendar-main {
+  flex: 1;
+  overflow-y: auto; /* 僅讓內容區域可捲動 */
+  padding-bottom: 10px;
+}
+
 .calendar-actions {
   display: flex;
   justify-content: center;
-  gap: 20px; /* 增加按鈕間距 */
-  margin: 10px 0;
-  padding: 0 15px;
+  gap: 20px;
+  margin: 0;
+  padding: 10px 15px;
+  background-color: white; /* 確保按鈕背景不透明 */
+  flex-shrink: 0; /* 確保按鈕區域不被壓縮 */
+  border-top: 1px solid var(--border-color);
 }
 
 .action-button-alt {

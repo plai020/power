@@ -159,30 +159,32 @@ export default function CalendarPage() {
 
   return (
     <div className="calendar-page">
-      <div className="calendar-header card" style={{ padding: '10px 20px', marginBottom: 0 }}>
-        <button onClick={handlePrevMonth}><ChevronLeft /></button>
-        <div className="calendar-controls">
-          <select value={currentDate.getFullYear()} onChange={handleYearChange}>
-            {Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i).map(y => (
-              <option key={y} value={y}>{y}年</option>
-            ))}
-          </select>
-          <select value={currentDate.getMonth()} onChange={handleMonthChange}>
-            {Array.from({ length: 12 }, (_, i) => i).map(m => (
-              <option key={m} value={m}>{m + 1}月</option>
-            ))}
-          </select>
+      <div className="calendar-main">
+        <div className="calendar-header card" style={{ padding: '10px 20px', marginBottom: 0 }}>
+          <button onClick={handlePrevMonth}><ChevronLeft /></button>
+          <div className="calendar-controls">
+            <select value={currentDate.getFullYear()} onChange={handleYearChange}>
+              {Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i).map(y => (
+                <option key={y} value={y}>{y}年</option>
+              ))}
+            </select>
+            <select value={currentDate.getMonth()} onChange={handleMonthChange}>
+              {Array.from({ length: 12 }, (_, i) => i).map(m => (
+                <option key={m} value={m}>{m + 1}月</option>
+              ))}
+            </select>
+          </div>
+          <button onClick={handleNextMonth}><ChevronRight /></button>
         </div>
-        <button onClick={handleNextMonth}><ChevronRight /></button>
-      </div>
 
-      <div className="card" style={{ padding: '10px' }}>
-        <div className="calendar-grid">
-          {DAYS.map(day => (
-            <div className="calendar-day-header" key={day}>{day}</div>
-          ))}
+        <div className="card" style={{ padding: '10px' }}>
+          <div className="calendar-grid">
+            {DAYS.map(day => (
+              <div className="calendar-day-header" key={day}>{day}</div>
+            ))}
+          </div>
+          {renderCells()}
         </div>
-        {renderCells()}
       </div>
 
       <div className="calendar-actions">
