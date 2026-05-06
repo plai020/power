@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Download, Upload, CloudLightning } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { syncToGoogleSheets } from '../services/googleSheets';
 import './Export.css';
 
 export default function Export() {
@@ -53,7 +54,6 @@ export default function Export() {
       }
     };
     reader.readAsText(file);
-    // reset input
     e.target.value = null;
   };
 
@@ -68,35 +68,28 @@ export default function Export() {
       return;
     }
 
-    setSyncStatus({ loading: true, message: '正在同步資料到 Google Sheets...', type: '' });
+    setSyncStatus({ loading: true, message: '正在檢查重複資料並同步...', type: '' });
 
     try {
-      const response = await fetch(settings.gasUrl, {
-        method: 'POST',
-        body: JSON.stringify(settledBills),
-        // no-cors mode might not return readable response, but we need JSON response to verify success.
-        // Google Apps script allows CORS if doOptions is setup properly. We will assume CORS works.
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8', // GAS requires text/plain for postData to bypass CORS preflight easily
-        }
-      });
-
-      const result = await response.json();
+      const result = await syncToGoogleSheets(settings.gasUrl, settledBills);
 
       if (result.success) {
-        setSyncStatus({ loading: false, message: '同步成功！已將所有資料寫入 db 工作表。', type: 'success' });
+        if (result.skipped) {
+          setSyncStatus({ loading: false, message: '同步完成：雲端資料已是最新狀態。', type: 'success' });
+        } else {
+          setSyncStatus({ loading: false, message: `同步成功！已上傳 ${result.count} 筆新資料。`, type: 'success' });
+        }
       } else {
-        setSyncStatus({ loading: false, message: `同步失敗：${result.error}`, type: 'error' });
+        setSyncStatus({ loading: false, message: `同步失敗：${result.error || '未知錯誤'}`, type: 'error' });
       }
     } catch (error) {
       console.error(error);
-      setSyncStatus({ loading: false, message: '同步失敗：網路錯誤或 CORS 設定有誤', type: 'error' });
+      setSyncStatus({ loading: false, message: `同步失敗：${error.message}`, type: 'error' });
     }
   };
 
   return (
     <div className="export-page">
-
       <div className="card setting-section">
         <h2>資料備份與同步</h2>
         <p className="text-small">
@@ -149,7 +142,6 @@ export default function Export() {
           匯入備份 (JSON)
         </button>
       </div>
-
     </div>
   );
 }

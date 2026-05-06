@@ -8,10 +8,15 @@ import { calculateElectricityCost, calculateBudgetForRange } from '../utils/calc
 import './Home.css';
 
 export default function Home() {
-  const { meterReadings, priceConfig, getBudgetForDate, addSettledBill, periodDates, setPeriodDates } = useAppContext();
+  const { meterReadings, priceConfig, getBudgetForDate, addSettledBill, settledBills, periodDates, setPeriodDates } = useAppContext();
   const navigate = useNavigate();
 
   const { startDate, endDate, billYear, billMonth, isLocked } = periodDates;
+
+  // 衝突檢查：檢查該年月是否已經結算過
+  const isAlreadySettled = useMemo(() => {
+    return settledBills?.some(b => b.year === parseInt(billYear) && b.month === parseInt(billMonth));
+  }, [billYear, billMonth, settledBills]);
 
   // Check if Start Date - 1 day has a reading
   const isMissingStartReading = useMemo(() => {
@@ -52,15 +57,8 @@ export default function Home() {
 
     if (startReading !== null && latestReading !== null && latestReading >= startReading) {
       usage = latestReading - startReading;
-      
-      // Calculate budget up to the latest reading date
       budgetUsage = calculateBudgetForRange(startDate, latestReadingObj.date, getBudgetForDate);
-      
-      // Calculate cost
       cost = calculateElectricityCost(usage, startDate, endDate, priceConfig);
-      
-      // Calculate budget cost (estimated based on budget usage)
-      // This might be subjective, but let's use the budget usage to estimate the budget cost
       budgetCost = calculateElectricityCost(budgetUsage, startDate, endDate, priceConfig);
     }
 
@@ -70,6 +68,10 @@ export default function Home() {
   const handleSettle = () => {
     if (!startDate || !endDate) {
       alert('請先設定起算日與結算日！');
+      return;
+    }
+    if (isAlreadySettled) {
+      alert('該月份已存在結算紀錄，請勿重複結算！');
       return;
     }
     if (isMissingEndReading) {
@@ -94,7 +96,6 @@ export default function Home() {
     addSettledBill(newBill);
     alert('已成功結算並儲存至統計頁面！');
     
-    // Clear fields
     const currentYear = new Date().getFullYear().toString();
     const currentMonth = (new Date().getMonth() + 1).toString();
     setPeriodDates({ 
@@ -133,26 +134,16 @@ export default function Home() {
         <div className="form-row">
           <div className="form-group">
             <label>帳單年</label>
-            <select 
-              value={billYear} 
-              onChange={(e) => handleYearChange(e.target.value)}
-              disabled={isLocked}
-            >
+            <select value={billYear} onChange={(e) => handleYearChange(e.target.value)} disabled={isLocked}>
               <option value="">請選擇</option>
               {[-3, -2, -1, 0, 1, 2, 3].map(offset => (
-                <option key={currentYearNum + offset} value={currentYearNum + offset}>
-                  {currentYearNum + offset}年
-                </option>
+                <option key={currentYearNum + offset} value={currentYearNum + offset}>{currentYearNum + offset}年</option>
               ))}
             </select>
           </div>
           <div className="form-group">
             <label>帳單月</label>
-            <select 
-              value={billMonth} 
-              onChange={(e) => handleMonthChange(e.target.value)}
-              disabled={isLocked}
-            >
+            <select value={billMonth} onChange={(e) => handleMonthChange(e.target.value)} disabled={isLocked}>
               <option value="">請選擇</option>
               {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                 <option key={m} value={m}>{m}月</option>
@@ -164,21 +155,11 @@ export default function Home() {
         <div className="form-row">
           <div className="form-group">
             <label>當期起算日</label>
-            <input 
-              type="date" 
-              value={startDate} 
-              onChange={(e) => !isLocked && setPeriodDates({ ...periodDates, startDate: e.target.value })} 
-              disabled={isLocked}
-            />
+            <input type="date" value={startDate} onChange={(e) => !isLocked && setPeriodDates({ ...periodDates, startDate: e.target.value })} disabled={isLocked} />
           </div>
           <div className="form-group">
             <label>當期結算日</label>
-            <input 
-              type="date" 
-              value={endDate} 
-              onChange={(e) => !isLocked && setPeriodDates({ ...periodDates, endDate: e.target.value })} 
-              disabled={isLocked}
-            />
+            <input type="date" value={endDate} onChange={(e) => !isLocked && setPeriodDates({ ...periodDates, endDate: e.target.value })} disabled={isLocked} />
           </div>
         </div>
 
@@ -192,12 +173,7 @@ export default function Home() {
 
       <div className="dashboard-grid">
         <div className="card dashboard-card">
-          <CircularProgress 
-            value={metrics.usage} 
-            max={metrics.budgetUsage || 1} 
-            label="當期試算度數" 
-            subLabel="預算度數"
-          />
+          <CircularProgress value={metrics.usage} max={metrics.budgetUsage || 1} label="當期試算度數" subLabel="預算度數" />
         </div>
         <div className="card dashboard-card">
           <CircularProgress 
@@ -212,13 +188,16 @@ export default function Home() {
       </div>
 
       <div className="action-container">
-        <button className="btn-primary" onClick={handleSettle}>
-          結算
-        </button>
-        {isMissingEndReading && startDate && endDate && (
-          <p className="error-text text-small text-center" style={{marginTop: '8px'}}>
-            ⚠️ 結算日尚無指針紀錄
+        {isAlreadySettled && (
+          <p className="error-text text-small text-center" style={{ marginBottom: '10px', color: 'var(--danger-color)', fontWeight: 'bold' }}>
+            ⚠️ 該月份 ({billYear}/{billMonth}) 已存在結算紀錄
           </p>
+        )}
+        <button className="btn-primary" onClick={handleSettle} disabled={isAlreadySettled} style={{ opacity: isAlreadySettled ? 0.6 : 1 }}>
+          {isAlreadySettled ? '此月份已結算' : '結算'}
+        </button>
+        {isMissingEndReading && startDate && endDate && !isAlreadySettled && (
+          <p className="error-text text-small text-center" style={{marginTop: '8px'}}>⚠️ 結算日尚無指針紀錄</p>
         )}
       </div>
     </div>
