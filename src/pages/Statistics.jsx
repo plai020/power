@@ -167,7 +167,7 @@ export default function Statistics() {
                   <div className="header-with-toggle">
                     <span>帳單年月</span>
                     <button className="toggle-details-btn" onClick={() => setHideDetails(!hideDetails)}>
-                      {hideDetails ? '顯示日期及備註' : '隱藏日期及備註'}
+                      {hideDetails ? <>顯示日期<br/>及備註</> : <>隱藏日期<br/>及備註</>}
                     </button>
                   </div>
                 </th>

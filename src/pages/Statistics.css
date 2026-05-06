@@ -44,18 +44,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 4px 0;
 }
 
 .toggle-details-btn {
   background: none;
   border: none;
   color: var(--info-color);
-  font-size: 11px; /* 縮小字體 */
+  font-size: 11px;
+  line-height: 1.3; /* 配合分行顯示 */
   padding: 2px 4px;
   cursor: pointer;
   text-decoration: underline;
   font-weight: normal;
+  white-space: nowrap;
 }
 
 .action-btns {
@@ -86,7 +89,7 @@
   border: 1px solid var(--border-color);
   border-radius: 4px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .note-input {
@@ -94,29 +97,29 @@
   padding: 6px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .text-small {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .stats-table th {
   background-color: var(--secondary-color);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-main);
   white-space: nowrap;
-  padding: 10px 8px;
+  padding: 8px 4px;
   border: 1px solid var(--border-color);
-  font-size: 14px;
+  font-size: 16px; /* 調大標頭字體 */
 }
 
 .stats-table td {
-  padding: 10px 8px;
+  padding: 12px 4px; /* 增加上下內距讓內容更顯眼 */
   text-align: center;
   border: 1px solid var(--border-color);
-  font-size: 14px;
-  min-height: 48px;
+  font-size: 15px; /* 調大資料字體 */
+  min-height: 52px;
 }
 
 .chart-container {

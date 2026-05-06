@@ -42,7 +42,7 @@
 }
 
 .calendar-cell {
-  min-height: 80px;
+  min-height: 65px; /* 縮小格子高度 (黃框) */
   aspect-ratio: auto;
   display: flex;
   flex-direction: column;
@@ -96,25 +96,25 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: calc(100vh - 85px); /* 扣除底部導覽列高度 */
-  overflow: hidden; /* 隱藏外層捲軸 */
+  height: calc(100vh - 85px); 
+  overflow: hidden; 
 }
 
 .calendar-main {
   flex: 1;
-  overflow-y: auto; /* 僅讓內容區域可捲動 */
-  padding-bottom: 10px;
+  overflow-y: auto; 
+  padding-bottom: 5px;
 }
 
 .calendar-actions {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 25px; /* 增加按鈕間距 */
   margin: 0;
-  padding: 10px 15px;
-  background-color: white; /* 確保按鈕背景不透明 */
-  flex-shrink: 0; /* 確保按鈕區域不被壓縮 */
-  border-top: 1px solid var(--border-color);
+  padding: 15px 15px 25px 15px; /* 增加底部間距以防遮擋 */
+  background-color: transparent; /* 移除白底容器 (紅框部分) */
+  flex-shrink: 0; 
+  border-top: none; /* 移除頂部框線 */
 }
 
 .action-button-alt {
