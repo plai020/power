@@ -91,6 +91,10 @@ export const AppProvider = ({ children }) => {
     return found ? found.budget : 10; // default 10 per day as per image if not found
   };
 
+  const updateSettledBill = (updatedBill) => {
+    setSettledBills(prev => prev.map(b => b.id === updatedBill.id ? updatedBill : b));
+  };
+
   const value = {
     meterReadings,
     addMeterReading,
@@ -98,6 +102,7 @@ export const AppProvider = ({ children }) => {
     settledBills,
     addSettledBill,
     deleteSettledBill,
+    updateSettledBill,
     settings,
     setSettings,
     periodDates,

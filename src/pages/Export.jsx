@@ -98,7 +98,7 @@ export default function Export() {
     <div className="export-page">
 
       <div className="card setting-section">
-        <h2>Google Sheets 整合</h2>
+        <h2>資料備份與同步</h2>
         <p className="text-small">
           貼上您部署好的 Google Apps Script Web App URL，以啟用預算讀取與自動同步功能。
         </p>

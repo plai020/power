@@ -11,7 +11,7 @@ import './Calendar.css';
 const DAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
 export default function CalendarPage() {
-  const { meterReadings, periodDates, getBudgetForDate, addMeterReading, deleteMeterReading } = useAppContext();
+  const { meterReadings, periodDates, priceConfig, getBudgetForDate, addMeterReading, deleteMeterReading } = useAppContext();
   const [currentDate, setCurrentDate] = useState(new Date());
   
   // Modal State
@@ -134,6 +134,13 @@ export default function CalendarPage() {
     setShowModal(false);
   };
 
+  const handleDelete = () => {
+    if (window.confirm('確定要刪除這筆紀錄嗎？')) {
+      deleteMeterReading(formData.date);
+      setShowModal(false);
+    }
+  };
+
   const handleCalcSubmit = (e) => {
     e.preventDefault();
     const { startDate, endDate, usage } = calcData;
@@ -221,6 +228,7 @@ export default function CalendarPage() {
                   placeholder="輸入度數"
                   value={calcData.usage}
                   onChange={e => setCalcData({...calcData, usage: e.target.value})}
+                  className="full-width-input"
                 />
               </div>
               
@@ -285,6 +293,7 @@ export default function CalendarPage() {
                   type="text" 
                   value={formData.note}
                   onChange={e => setFormData({...formData, note: e.target.value})}
+                  className="full-width-input"
                 />
               </div>
               

@@ -23,21 +23,28 @@
   text-align: center;
 }
 
-.circular-progress-content .value {
-  font-size: 32px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
 .circular-progress-content .label {
   font-size: 14px;
   color: var(--text-main);
   font-weight: 600;
-  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.circular-progress-content .value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .circular-progress-content .sub-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.circular-progress-content .extra-info {
+  font-size: 11px;
+  color: var(--info-color);
+  font-weight: 600;
   margin-top: 2px;
 }

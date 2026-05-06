@@ -7,7 +7,8 @@ export default function CircularProgress({
   subLabel = '', 
   size = 140,
   strokeWidth = 12,
-  color = 'var(--primary-color)'
+  color = 'var(--primary-color)',
+  extraInfo = ''
 }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -51,9 +52,10 @@ export default function CircularProgress({
         />
       </svg>
       <div className="circular-progress-content">
-        <div className="value" style={{ color: actualColor }}>{value}</div>
         <div className="label">{label}</div>
-        <div className="sub-label">{subLabel}: {max}</div>
+        <div className="value" style={{ color: actualColor }}>{value.toLocaleString()}</div>
+        <div className="sub-label">{subLabel}: {max.toLocaleString()}</div>
+        {extraInfo && <div className="extra-info">{extraInfo}</div>}
       </div>
     </div>
   );

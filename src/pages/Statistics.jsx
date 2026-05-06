@@ -145,64 +145,82 @@ export default function Statistics() {
       </div>
 
       {showTable && (
-        <div className="table-container">
+        <div className="table-container card">
+          <div className="table-header-actions">
+            <button className="btn-secondary text-small" onClick={() => setHideDates(!hideDates)}>
+              {hideDates ? '顯示日期' : '隱藏日期'}
+            </button>
+          </div>
           <table className="stats-table">
             <thead>
               <tr>
-                <th>帳單年月</th>
-                <th>起算日</th>
-                <th>結算日</th>
-                <th>試算度數</th>
-                <th>試算電費</th>
-                <th>實際度數</th>
-                <th>實際電費</th>
-                <th>備註</th>
-                <th>操作</th>
+                <th rowSpan="2">帳單年月</th>
+                {!hideDates && <th colSpan="2">日期</th>}
+                <th colSpan="2">試算</th>
+                <th colSpan="3">實際</th>
+                <th rowSpan="2">備註</th>
+                <th rowSpan="2">操作</th>
+              </tr>
+              <tr>
+                {!hideDates && <th>起算日</th>}
+                {!hideDates && <th>結算日</th>}
+                <th>度數</th>
+                <th>電費</th>
+                <th>度數</th>
+                <th>電費</th>
+                <th>平均</th>
               </tr>
             </thead>
             <tbody>
-              {settledBills.map(bill => (
-                <tr key={bill.id}>
-                  <td>{bill.year}/{bill.month}</td>
-                  <td>{bill.startDate.substring(5)}</td>
-                  <td>{bill.endDate.substring(5)}</td>
-                  <td>{bill.calculatedUsage}</td>
-                  <td>${bill.calculatedCost}</td>
-                  <td>
-                    <input 
-                      type="number" 
-                      value={bill.actualUsage || ''} 
-                      onChange={(e) => handleUpdateBill(bill.id, 'actualUsage', e.target.value)}
-                      placeholder="未輸入"
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      value={bill.actualCost || ''} 
-                      onChange={(e) => handleUpdateBill(bill.id, 'actualCost', e.target.value)}
-                      placeholder="未輸入"
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      className="note-input"
-                      value={bill.note || ''} 
-                      onChange={(e) => handleUpdateBill(bill.id, 'note', e.target.value)}
-                      placeholder="備註..."
-                    />
-                  </td>
-                  <td>
-                    <button className="action-btn" onClick={() => handleDelete(bill.id)}>
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {settledBills.map(bill => {
+                const actualUsageNum = parseFloat(bill.actualUsage) || 0;
+                const actualCostNum = parseFloat(bill.actualCost) || 0;
+                const avgCost = actualUsageNum > 0 ? (actualCostNum / actualUsageNum).toFixed(2) : '0.00';
+
+                return (
+                  <tr key={bill.id}>
+                    <td className="text-center font-bold">{bill.year}/{bill.month}</td>
+                    {!hideDates && <td className="text-center">{bill.startDate.substring(5)}</td>}
+                    {!hideDates && <td className="text-center">{bill.endDate.substring(5)}</td>}
+                    <td className="text-center">{bill.calculatedUsage?.toLocaleString()}</td>
+                    <td className="text-center">${bill.calculatedCost?.toLocaleString()}</td>
+                    <td className="text-center">
+                      <input 
+                        type="number" 
+                        value={bill.actualUsage || ''} 
+                        onChange={(e) => updateSettledBill({ ...bill, actualUsage: e.target.value })}
+                        placeholder="度數"
+                      />
+                    </td>
+                    <td className="text-center">
+                      <input 
+                        type="number" 
+                        value={bill.actualCost || ''} 
+                        onChange={(e) => updateSettledBill({ ...bill, actualCost: e.target.value })}
+                        placeholder="電費"
+                      />
+                    </td>
+                    <td className="text-center font-mono text-small">${parseFloat(avgCost).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td className="text-center">
+                      <input 
+                        type="text" 
+                        className="note-input"
+                        value={bill.note || ''} 
+                        onChange={(e) => updateSettledBill({ ...bill, note: e.target.value })}
+                        placeholder="..."
+                      />
+                    </td>
+                    <td className="text-center">
+                      <button className="action-btn" onClick={() => handleDelete(bill.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {settledBills.length === 0 && (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                  <td colSpan={hideDates ? "8" : "10"} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
                     目前尚無結算資料
                   </td>
                 </tr>

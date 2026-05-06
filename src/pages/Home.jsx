@@ -139,7 +139,7 @@ export default function Home() {
               disabled={isLocked}
             >
               <option value="">請選擇</option>
-              {[0, 1, 2].map(offset => (
+              {[-1, 0, 1, 2, 3].map(offset => (
                 <option key={currentYearNum - offset} value={currentYearNum - offset}>
                   {currentYearNum - offset}年
                 </option>
@@ -206,6 +206,7 @@ export default function Home() {
             label="當期試算電費" 
             subLabel="預算電費"
             color="var(--info-color)"
+            extraInfo={`(平均 $${(metrics.usage > 0 ? (metrics.cost / metrics.usage).toFixed(2) : "0.00")})`}
           />
         </div>
       </div>

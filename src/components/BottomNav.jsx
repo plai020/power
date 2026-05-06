@@ -7,7 +7,7 @@ export default function BottomNav() {
     { path: '/', label: '首頁', icon: Home },
     { path: '/calendar', label: '月曆', icon: CalendarIcon },
     { path: '/statistics', label: '統計', icon: BarChart3 },
-    { path: '/export', label: '匯出', icon: Settings }
+    { path: '/export', label: '備份', icon: Settings }
   ];
 
   return (
