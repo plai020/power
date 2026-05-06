@@ -92,34 +92,35 @@
   color: var(--danger-color);
 }
 
-.fab-group {
-  position: fixed;
-  bottom: 85px; /* 高一點避免遮擋 */
-  right: 20px;
+.calendar-actions {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: 15px;
-  z-index: 99;
+  margin: 15px 0;
+  padding: 0 10px;
 }
 
-.fab-button {
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
+.action-button-alt {
+  flex: 1;
+  max-width: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
   border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: all 0.2s;
+  font-size: 15px;
+  font-weight: 600;
   color: white;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s;
 }
 
-.calc-fab { background-color: var(--info-color); }
-.add-fab { background-color: var(--primary-color); }
-
-.fab-button:active { transform: scale(0.9); }
+.action-button-alt:active { transform: scale(0.95); }
+.add-btn { background-color: var(--primary-color); }
+.calc-btn { background-color: var(--info-color); }
 
 /* Modal Styling */
 .modal-overlay {
@@ -175,28 +176,25 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
+  text-align: left; /* 標籤靠左 */
 }
 
 .modal-form input {
   padding: 12px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  font-size: 17px; /* 稍微大一點方便輸入 */
+  font-size: 17px;
   width: 100%;
-  box-sizing: border-box;
-}
-
-.modal-form input.full-width-input {
-  width: 100%;
+  box-sizing: border-box; /* 重要：確保留白一致 */
+  text-align: center; /* 輸入框內文字置中 */
 }
 
 .calc-result-box {
   margin-top: 15px;
   padding: 15px;
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: #f0f7ff;
   border-radius: 12px;
   text-align: center;
-  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 .result-label {
@@ -206,9 +204,9 @@
 }
 
 .result-value {
-  font-size: 24px;
+  font-size: 24px; /* 加大字體 */
   font-weight: 800;
-  color: var(--primary-color);
+  color: var(--info-color);
 }
 
 .modal-actions {

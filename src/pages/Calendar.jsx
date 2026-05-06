@@ -145,8 +145,10 @@ export default function CalendarPage() {
     e.preventDefault();
     const { startDate, endDate, usage } = calcData;
     if (!startDate || !endDate || !usage) return;
-    const cost = calculateElectricityCost(parseInt(usage), startDate, endDate, priceConfig);
-    setCalcResult(cost);
+    const usageNum = parseInt(usage);
+    const cost = calculateElectricityCost(usageNum, startDate, endDate, priceConfig);
+    const avg = usageNum > 0 ? (cost / usageNum).toFixed(2) : '0.00';
+    setCalcResult({ cost, avg });
   };
 
   const handleCalcClick = () => {
@@ -183,12 +185,14 @@ export default function CalendarPage() {
         {renderCells()}
       </div>
 
-      <div className="fab-group">
-        <button className="fab-button calc-fab" onClick={handleCalcClick}>
-          <Calculator size={28} />
+      <div className="calendar-actions">
+        <button className="action-button-alt add-btn" onClick={handleAddClick}>
+          <Plus size={20} />
+          <span>新增紀錄</span>
         </button>
-        <button className="fab-button add-fab" onClick={handleAddClick}>
-          <Plus size={32} />
+        <button className="action-button-alt calc-btn" onClick={handleCalcClick}>
+          <Calculator size={20} />
+          <span>試算電費</span>
         </button>
       </div>
 
@@ -239,7 +243,9 @@ export default function CalendarPage() {
               {calcResult !== null && (
                 <div className="calc-result-box">
                   <div className="result-label">試算電費結果：</div>
-                  <div className="result-value">${calcResult}</div>
+                  <div className="result-value">
+                    ${calcResult.cost.toLocaleString()}(平均${calcResult.avg})
+                  </div>
                 </div>
               )}
             </form>

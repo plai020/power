@@ -25,24 +25,10 @@ ChartJS.register(
 );
 
 export default function Statistics() {
-  const { settledBills, deleteSettledBill, addSettledBill } = useAppContext(); // use addSettledBill (we actually need an update function, but we can delete and re-add or better, let's just add updateSettledBill to context. For now, since Context doesn't have update, I'll update localStorage directly or add it. Wait, I should add update to context).
+  const { settledBills, deleteSettledBill, updateSettledBill } = useAppContext();
   const [showTable, setShowTable] = useState(true);
   const [showCharts, setShowCharts] = useState(true);
-
-  // Quick helper to update a bill without modifying context structure
-  const handleUpdateBill = (id, field, value) => {
-    // Note: In a real app, we should add updateSettledBill to AppContext.
-    // For this prototype, I'll manipulate the bills and trigger a re-render by doing a shallow copy trick if context doesn't expose it.
-    // Actually, I can just dispatch to local storage and force reload, but let's implement update in AppContext later. 
-    // Since I can't easily edit AppContext here without `multi_replace`, I'll rely on a small hack: 
-    // find it, delete it, add it back.
-    const bill = settledBills.find(b => b.id === id);
-    if (bill) {
-      const updated = { ...bill, [field]: value };
-      deleteSettledBill(id);
-      addSettledBill(updated);
-    }
-  };
+  const [hideDates, setHideDates] = useState(true);
 
   const handleDelete = (id) => {
     if (window.confirm('確定要刪除這筆結算資料嗎？')) {

@@ -124,9 +124,9 @@ export default function Home() {
   return (
     <div className="home-page">
       <div className="card settings-card">
-        <div className="settings-header">
+        <div className="settings-header" style={{ justifyContent: 'center', position: 'relative' }}>
           <h2 className="settings-title">帳單期間設定</h2>
-          <button className={`lock-btn ${isLocked ? 'locked' : ''}`} onClick={toggleLock}>
+          <button className={`lock-btn ${isLocked ? 'locked' : ''}`} onClick={toggleLock} style={{ position: 'absolute', right: 0 }}>
             {isLocked ? <Lock size={20} /> : <Unlock size={20} />}
           </button>
         </div>
@@ -139,9 +139,9 @@ export default function Home() {
               disabled={isLocked}
             >
               <option value="">請選擇</option>
-              {[-1, 0, 1, 2, 3].map(offset => (
-                <option key={currentYearNum - offset} value={currentYearNum - offset}>
-                  {currentYearNum - offset}年
+              {[-3, -2, -1, 0, 1, 2, 3].map(offset => (
+                <option key={currentYearNum + offset} value={currentYearNum + offset}>
+                  {currentYearNum + offset}年
                 </option>
               ))}
             </select>
