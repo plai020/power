@@ -1,17 +1,18 @@
 /**
- * Google Sheets 同步服務
+ * Google Sheets 同步服務 (徹底重構版)
+ * 統一格式：YYYY/M (例如 2026/5)
  */
 
 /**
- * 格式化年月為唯一鍵 (YYYY-MM)
+ * 格式化年月為唯一鍵 (需與 App 統計頁面 YYYY/M 一致)
  */
 export const formatBillKey = (year, month) => {
-  return `${year}-${month.toString().padStart(2, '0')}`;
+  if (!year || !month) return '';
+  return `${year}/${month}`;
 };
 
 /**
  * 從 Google Sheets 讀取現有資料
- * 假設 GAS 支援 ?action=read
  */
 export const fetchExistingBills = async (gasUrl) => {
   try {
@@ -19,9 +20,13 @@ export const fetchExistingBills = async (gasUrl) => {
     if (!response.ok) throw new Error('無法讀取遠端資料');
     const result = await response.json();
     
-    // 確保回傳的是陣列，並且過濾掉無效資料
     if (result.success && Array.isArray(result.data)) {
-      return result.data.filter(b => b && (b.billYearMonth || b['帳單年月']));
+      // 確保回傳資料有效，並統一讀取第一欄 (帳單年月)
+      return result.data.map(row => {
+        // 相容於物件格式或陣列格式
+        const key = row.billYearMonth || row['帳單年月'] || (Array.isArray(row) ? row[0] : null);
+        return { billYearMonth: key, ...row };
+      }).filter(b => b.billYearMonth);
     }
     return [];
   } catch (error) {
@@ -32,40 +37,39 @@ export const fetchExistingBills = async (gasUrl) => {
 
 /**
  * 同步資料到 Google Sheets (增量上傳)
+ * 嚴格對應 9 個欄位：
+ * 0: 帳單年月, 1: 帳單起算日, 2: 帳單結算日, 3: 試算度數, 4: 試算電費, 
+ * 5: 實際度數, 6: 實際電費, 7: 平均, 8: 備註
  */
 export const syncToGoogleSheets = async (gasUrl, localBills) => {
   if (!gasUrl) throw new Error('未設定 Web App URL');
   
   // 1. 獲取現有資料進行比對
   const existingBills = await fetchExistingBills(gasUrl);
-  
-  // 支援多種 Key 格式 (英文或中文標頭)
-  const existingKeys = new Set(
-    existingBills.map(b => b.billYearMonth || b['帳單年月']).filter(Boolean)
-  );
+  const existingKeys = new Set(existingBills.map(b => b.billYearMonth));
 
-  // 2. 過濾出尚未上傳的資料，並按照使用者要求的 9 個欄位對應
+  // 2. 準備增量資料
   const newBills = (localBills || [])
     .filter(bill => {
       const key = formatBillKey(bill.year, bill.month);
-      return !existingKeys.has(key);
+      return key && !existingKeys.has(key);
     })
     .map(bill => {
       const actualUsageNum = parseFloat(bill.actualUsage) || 0;
       const actualCostNum = parseFloat(bill.actualCost) || 0;
       const avgPrice = actualUsageNum > 0 ? (actualCostNum / actualUsageNum).toFixed(2) : '0.00';
       
-      // 精確對應使用者指定的 9 個欄位順序與名稱
+      // 依照順序建構資料 (GAS 端建議依據 Key 寫入，此處輸出標準物件)
       return {
-        billYearMonth: formatBillKey(bill.year, bill.month), // 1. 帳單年月
-        startDate: bill.startDate || '',                     // 2. 帳單起算日
-        endDate: bill.endDate || '',                         // 3. 帳單結算日
-        calcUsage: bill.calculatedUsage || 0,                // 4. 試算度數
-        calcCost: bill.calculatedCost || 0,                  // 5. 試算電費
-        actualUsage: actualUsageNum,                         // 6. 實際度數
-        actualCost: actualCostNum,                           // 7. 實際電費
-        avgPrice: parseFloat(avgPrice),                      // 8. 平均 (數值格式)
-        remark: bill.note || ''                               // 9. 備註
+        '帳單年月': formatBillKey(bill.year, bill.month),
+        '帳單起算日': bill.startDate || '',
+        '帳單結算日': bill.endDate || '',
+        '試算度數': bill.calculatedUsage || 0,
+        '試算電費': bill.calculatedCost || 0,
+        '實際度數': actualUsageNum,
+        '實際電費': actualCostNum,
+        '平均': parseFloat(avgPrice),
+        '備註': bill.note || ''
       };
     });
 
@@ -73,7 +77,7 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
     return { success: true, message: '資料已是最新，無需同步。', skipped: true };
   }
 
-  // 3. 執行上傳 (action=write)
+  // 3. 執行寫入
   const response = await fetch(gasUrl, {
     method: 'POST',
     body: JSON.stringify({
@@ -85,7 +89,7 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
     }
   });
 
-  if (!response.ok) throw new Error('網路回應錯誤');
+  if (!response.ok) throw new Error('同步請求失敗');
   const result = await response.json();
   return { ...result, count: newBills.length };
 };

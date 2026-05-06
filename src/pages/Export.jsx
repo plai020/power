@@ -75,12 +75,12 @@ export default function Export() {
 
       if (result.success) {
         if (result.skipped) {
-          setSyncStatus({ loading: false, message: '同步完成：雲端資料已是最新狀態。', type: 'success' });
+          setSyncStatus({ loading: false, message: '同步完成：雲端已有最新紀錄，無需重複上傳。', type: 'success' });
         } else {
-          setSyncStatus({ loading: false, message: `同步成功！已上傳 ${result.count} 筆新資料。`, type: 'success' });
+          setSyncStatus({ loading: false, message: `同步成功！已成功上傳 ${result.count} 筆新資料。`, type: 'success' });
         }
       } else {
-        setSyncStatus({ loading: false, message: `同步失敗：${result.error || '未知錯誤'}`, type: 'error' });
+        setSyncStatus({ loading: false, message: result.message || '目前雲端尚無備份資料或同步失敗。', type: 'error' });
       }
     } catch (error) {
       console.error(error);
