@@ -187,12 +187,10 @@ export default function CalendarPage() {
 
       <div className="calendar-actions">
         <button className="action-button-alt add-btn" onClick={handleAddClick}>
-          <Plus size={20} />
-          <span>新增紀錄</span>
+          <Plus size={24} />
         </button>
         <button className="action-button-alt calc-btn" onClick={handleCalcClick}>
-          <Calculator size={20} />
-          <span>試算電費</span>
+          <Calculator size={24} />
         </button>
       </div>
 

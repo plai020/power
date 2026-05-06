@@ -37,11 +37,13 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+  padding: 15px; /* 增加內部邊距，確保不貼邊 */
 }
 
 .form-row {
   display: flex;
-  gap: 15px;
+  gap: 15px; /* 框體之間的間距 (黃框) */
+  width: 100%;
 }
 
 .form-group {
@@ -49,13 +51,14 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0; /* 防止子元素撐開寬度 */
 }
 
 .form-group label {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
-  text-align: center; /* 標籤置中 */
+  text-align: center;
 }
 
 .form-group select,
@@ -65,10 +68,12 @@
   border-radius: 8px;
   font-size: 16px;
   width: 100%;
-  text-align: center; /* 輸入框內文字置中 */
-  text-align-last: center; /* 針對 select 元件的修正 */
+  text-align: center;
+  text-align-last: center;
   box-sizing: border-box;
-  min-width: 0; 
+  -webkit-appearance: none; /* 強制移除 iOS 預設樣式 */
+  background-color: white;
+  min-height: 44px; /* iOS 最佳點擊高度 */
 }
 
 .form-group select:disabled,

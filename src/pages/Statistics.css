@@ -40,19 +40,65 @@
   min-width: 600px;
 }
 
-.table-header-actions {
+.header-with-toggle {
   display: flex;
-  justify-content: flex-end;
-  padding: 10px;
-  background-color: var(--secondary-color);
-  border-bottom: 1px solid var(--border-color);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.stats-table th, .stats-table td {
-  padding: 10px 8px;
-  text-align: center; /* 全部置中 */
-  border: 1px solid var(--border-color); /* 為了看清合併儲存格，加入格線 */
+.toggle-details-btn {
+  background: none;
+  border: none;
+  color: var(--info-color);
+  font-size: 11px; /* 縮小字體 */
+  padding: 2px 4px;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: normal;
+}
+
+.action-btns {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.action-btn.info { color: var(--info-color); }
+.action-btn.success { color: var(--success-color); }
+.action-btn.danger { color: var(--danger-color); }
+.action-btn:hover { background-color: rgba(0,0,0,0.05); }
+
+.table-input {
+  width: 90%;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  text-align: center;
   font-size: 14px;
+}
+
+.note-input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.text-small {
+  font-size: 13px;
 }
 
 .stats-table th {
@@ -60,30 +106,17 @@
   font-weight: 600;
   color: var(--text-main);
   white-space: nowrap;
+  padding: 10px 8px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
 }
 
-.stats-table input {
-  width: 60px;
-  padding: 6px 4px;
+.stats-table td {
+  padding: 10px 8px;
   text-align: center;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-}
-
-.stats-table input.note-input {
-  width: 80px;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  color: var(--danger-color);
-  padding: 4px;
-  border-radius: 4px;
-}
-
-.action-btn:hover {
-  background-color: rgba(239, 83, 80, 0.1);
+  font-size: 14px;
+  min-height: 48px;
 }
 
 .chart-container {

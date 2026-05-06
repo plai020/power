@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit2, Check, X } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,6 +34,29 @@ export default function Statistics() {
     if (window.confirm('確定要刪除這筆結算資料嗎？')) {
       deleteSettledBill(id);
     }
+  };
+
+  const startEditing = (bill) => {
+    setEditingId(bill.id);
+    setEditValues({
+      actualUsage: bill.actualUsage || '',
+      actualCost: bill.actualCost || '',
+      note: bill.note || ''
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditValues({});
+  };
+
+  const saveEditing = (id) => {
+    const bill = settledBills.find(b => b.id === id);
+    if (bill) {
+      updateSettledBill({ ...bill, ...editValues });
+    }
+    setEditingId(null);
+    setEditValues({});
   };
 
   // Chart Data Preparation
@@ -132,24 +155,26 @@ export default function Statistics() {
 
       {showTable && (
         <div className="table-container card">
-          <div className="table-header-actions">
-            <button className="btn-secondary text-small" onClick={() => setHideDates(!hideDates)}>
-              {hideDates ? '顯示日期' : '隱藏日期'}
-            </button>
-          </div>
           <table className="stats-table">
             <thead>
               <tr>
-                <th rowSpan="2">帳單年月</th>
-                {!hideDates && <th colSpan="2">日期</th>}
+                <th rowSpan="2">
+                  <div className="header-with-toggle">
+                    <span>帳單年月</span>
+                    <button className="toggle-details-btn" onClick={() => setHideDetails(!hideDetails)}>
+                      {hideDetails ? '顯示日期及備註' : '隱藏日期及備註'}
+                    </button>
+                  </div>
+                </th>
+                {!hideDetails && <th colSpan="2">日期</th>}
                 <th colSpan="2">試算</th>
                 <th colSpan="3">實際</th>
-                <th rowSpan="2">備註</th>
+                {!hideDetails && <th rowSpan="2">備註</th>}
                 <th rowSpan="2">操作</th>
               </tr>
               <tr>
-                {!hideDates && <th>起算日</th>}
-                {!hideDates && <th>結算日</th>}
+                {!hideDetails && <th>起算日</th>}
+                {!hideDetails && <th>結算日</th>}
                 <th>度數</th>
                 <th>電費</th>
                 <th>度數</th>
@@ -162,51 +187,90 @@ export default function Statistics() {
                 const actualUsageNum = parseFloat(bill.actualUsage) || 0;
                 const actualCostNum = parseFloat(bill.actualCost) || 0;
                 const avgCost = actualUsageNum > 0 ? (actualCostNum / actualUsageNum).toFixed(2) : '0.00';
+                const isEditing = editingId === bill.id;
 
                 return (
                   <tr key={bill.id}>
                     <td className="text-center font-bold">{bill.year}/{bill.month}</td>
-                    {!hideDates && <td className="text-center">{bill.startDate.substring(5)}</td>}
-                    {!hideDates && <td className="text-center">{bill.endDate.substring(5)}</td>}
+                    {!hideDetails && <td className="text-center">{bill.startDate.substring(5)}</td>}
+                    {!hideDetails && <td className="text-center">{bill.endDate.substring(5)}</td>}
                     <td className="text-center">{bill.calculatedUsage?.toLocaleString()}</td>
                     <td className="text-center">${bill.calculatedCost?.toLocaleString()}</td>
+                    
+                    {/* 實際度數 */}
                     <td className="text-center">
-                      <input 
-                        type="number" 
-                        value={bill.actualUsage || ''} 
-                        onChange={(e) => updateSettledBill({ ...bill, actualUsage: e.target.value })}
-                        placeholder="度數"
-                      />
+                      {isEditing ? (
+                        <input 
+                          type="number" 
+                          className="table-input"
+                          value={editValues.actualUsage} 
+                          onChange={(e) => setEditValues({ ...editValues, actualUsage: e.target.value })}
+                        />
+                      ) : (
+                        <span>{actualUsageNum > 0 ? actualUsageNum.toLocaleString() : '-'}</span>
+                      )}
                     </td>
+
+                    {/* 實際電費 */}
                     <td className="text-center">
-                      <input 
-                        type="number" 
-                        value={bill.actualCost || ''} 
-                        onChange={(e) => updateSettledBill({ ...bill, actualCost: e.target.value })}
-                        placeholder="電費"
-                      />
+                      {isEditing ? (
+                        <input 
+                          type="number" 
+                          className="table-input"
+                          value={editValues.actualCost} 
+                          onChange={(e) => setEditValues({ ...editValues, actualCost: e.target.value })}
+                        />
+                      ) : (
+                        <span>{actualCostNum > 0 ? `$${actualCostNum.toLocaleString()}` : '-'}</span>
+                      )}
                     </td>
+
                     <td className="text-center font-mono text-small">${parseFloat(avgCost).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    
+                    {!hideDetails && (
+                      <td className="text-center">
+                        {isEditing ? (
+                          <input 
+                            type="text" 
+                            className="note-input"
+                            value={editValues.note} 
+                            onChange={(e) => setEditValues({ ...editValues, note: e.target.value })}
+                          />
+                        ) : (
+                          <span className="text-small">{bill.note || '-'}</span>
+                        )}
+                      </td>
+                    )}
+
                     <td className="text-center">
-                      <input 
-                        type="text" 
-                        className="note-input"
-                        value={bill.note || ''} 
-                        onChange={(e) => updateSettledBill({ ...bill, note: e.target.value })}
-                        placeholder="..."
-                      />
-                    </td>
-                    <td className="text-center">
-                      <button className="action-btn" onClick={() => handleDelete(bill.id)}>
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="action-btns">
+                        {isEditing ? (
+                          <>
+                            <button className="action-btn success" onClick={() => saveEditing(bill.id)}>
+                              <Check size={18} />
+                            </button>
+                            <button className="action-btn danger" onClick={cancelEditing}>
+                              <X size={18} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button className="action-btn info" onClick={() => startEditing(bill)}>
+                              <Edit2 size={18} />
+                            </button>
+                            <button className="action-btn danger" onClick={() => handleDelete(bill.id)}>
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
               })}
               {settledBills.length === 0 && (
                 <tr>
-                  <td colSpan={hideDates ? "8" : "10"} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                  <td colSpan={hideDetails ? "7" : "10"} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
                     目前尚無結算資料
                   </td>
                 </tr>
