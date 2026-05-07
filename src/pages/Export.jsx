@@ -7,19 +7,7 @@ import './Export.css';
 export default function Export() {
   const { settings, setSettings, meterReadings, settledBills } = useAppContext();
   const [syncStatus, setSyncStatus] = useState({ loading: false, message: '', type: '' });
-  const [debugLogs, setDebugLogs] = useState([]);
   const fileInputRef = useRef(null);
-
-  const addDebugLog = (title, content) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const newLog = {
-      id: Date.now() + Math.random(),
-      timestamp,
-      title,
-      content: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
-    };
-    setDebugLogs(prev => [...prev, newLog]);
-  };
 
   const handleExportJSON = () => {
     const data = {
@@ -81,35 +69,21 @@ export default function Export() {
     }
 
     setSyncStatus({ loading: true, message: '正在檢查重複資料並同步...', type: '' });
-    setDebugLogs([]); // 清除舊日誌
 
     try {
       const result = await syncToGoogleSheets(settings.gasUrl, settledBills);
-
-      if (result.debugInfo) {
-        addDebugLog('Request URL', result.debugInfo.url);
-        if (result.debugInfo.status) {
-          addDebugLog('HTTP Status', `${result.debugInfo.status} ${result.debugInfo.statusText || ''}`);
-        }
-        addDebugLog('Raw Response', result.debugInfo.rawResponse || '(Empty)');
-        addDebugLog('Mapping Result', result.debugInfo.mappingResult);
-        if (result.debugInfo.error) {
-          addDebugLog('Error Message', result.debugInfo.error);
-        }
-      }
 
       if (result.success) {
         if (result.skipped) {
           setSyncStatus({ loading: false, message: '同步完成：雲端已有最新紀錄，無需重複上傳。', type: 'success' });
         } else {
-          setSyncStatus({ loading: false, message: `同步成功！已成功上傳 ${result.count} 筆新資料。`, type: 'success' });
+          setSyncStatus({ loading: false, message: `同步成功！${result.message || ''}`, type: 'success' });
         }
       } else {
-        setSyncStatus({ loading: false, message: result.message || '目前雲端尚無備份資料或同步失敗。', type: 'error' });
+        setSyncStatus({ loading: false, message: result.message || '同步失敗，請檢查網路或設定。', type: 'error' });
       }
     } catch (error) {
       console.error(error);
-      addDebugLog('Fatal Error', error.message);
       setSyncStatus({ loading: false, message: `同步失敗：${error.message}`, type: 'error' });
     }
   };
@@ -168,23 +142,6 @@ export default function Export() {
           匯入備份 (JSON)
         </button>
       </div>
-
-      {/* 除錯終端機 */}
-      {debugLogs.length > 0 && (
-        <div className="debug-terminal">
-          <div className="terminal-header">Debug Console</div>
-          <div className="terminal-body">
-            {debugLogs.map(log => (
-              <div key={log.id} className="log-entry">
-                <div className="log-title">
-                  <span className="log-time">[{log.timestamp}]</span> {log.title}
-                </div>
-                <pre className="log-content">{log.content}</pre>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
