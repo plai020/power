@@ -88,7 +88,10 @@ export default function Export() {
 
       if (result.debugInfo) {
         addDebugLog('Request URL', result.debugInfo.url);
-        addDebugLog('Raw Response', result.debugInfo.rawResponse);
+        if (result.debugInfo.status) {
+          addDebugLog('HTTP Status', `${result.debugInfo.status} ${result.debugInfo.statusText || ''}`);
+        }
+        addDebugLog('Raw Response', result.debugInfo.rawResponse || '(Empty)');
         addDebugLog('Mapping Result', result.debugInfo.mappingResult);
         if (result.debugInfo.error) {
           addDebugLog('Error Message', result.debugInfo.error);

@@ -22,9 +22,9 @@ export const fetchExistingBills = async (gasUrl) => {
   let rawResponse = '';
   try {
     const response = await fetch(url);
-    rawResponse = await response.text(); // 先取文字，避免 JSON 解析失敗就拿不到內容
+    rawResponse = await response.text(); 
     
-    if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status} ${response.statusText}`);
     
     const result = JSON.parse(rawResponse);
     
@@ -45,6 +45,8 @@ export const fetchExistingBills = async (gasUrl) => {
       data: bills,
       debugInfo: {
         url,
+        status: response.status,
+        statusText: response.statusText,
         rawResponse,
         mappingResult: bills
       }
@@ -121,8 +123,8 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
     const response = await fetch(gasUrl, {
       method: 'POST',
       body: JSON.stringify({
-        action: 'write',
-        data: newBills
+        action: 'sync', // 使用使用者 GAS 定義的 action
+        bills: newBills // 使用使用者 GAS 定義的 key
       }),
       headers: {
         'Content-Type': 'text/plain;charset=utf-8',
@@ -130,7 +132,10 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
     });
 
     postRawResponse = await response.text();
-    if (!response.ok) throw new Error(`同步請求失敗: ${response.status}`);
+    
+    if (!response.ok) {
+      throw new Error(`同步請求失敗: ${response.status} ${response.statusText}`);
+    }
     
     const result = JSON.parse(postRawResponse);
     return { 
@@ -138,6 +143,8 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
       count: newBills.length,
       debugInfo: {
         url: gasUrl,
+        status: response.status,
+        statusText: response.statusText,
         rawResponse: postRawResponse,
         mappingResult: newBills
       }
