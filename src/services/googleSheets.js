@@ -35,8 +35,10 @@ export const fetchExistingBills = async (gasUrl) => {
     let bills = [];
     if (result.success && Array.isArray(result.data)) {
       bills = result.data.map(row => {
-        const key = row.billYearMonth || row['帳單年月'] || (Array.isArray(row) ? row[0] : null);
-        return { billYearMonth: key || '', ...row };
+        const rawKey = row.billYearMonth || row['帳單年月'] || (Array.isArray(row) ? row[0] : null);
+        // 確保 key 是字串且格式一致 (YYYY/M)
+        const key = typeof rawKey === 'string' ? rawKey.trim() : String(rawKey || '');
+        return { billYearMonth: key, ...row };
       }).filter(b => b.billYearMonth);
     }
     
