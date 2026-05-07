@@ -14,38 +14,60 @@ export const formatBillKey = (year, month) => {
 /**
  * 從 Google Sheets 讀取現有資料
  */
+/**
+ * 從 Google Sheets 讀取現有資料
+ */
 export const fetchExistingBills = async (gasUrl) => {
+  const url = `${gasUrl}?action=read`;
+  let rawResponse = '';
   try {
-    const response = await fetch(`${gasUrl}?action=read`);
-    if (!response.ok) throw new Error('無法讀取遠端資料');
-    const result = await response.json();
+    const response = await fetch(url);
+    rawResponse = await response.text(); // 先取文字，避免 JSON 解析失敗就拿不到內容
     
+    if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
+    
+    const result = JSON.parse(rawResponse);
+    
+    let bills = [];
     if (result.success && Array.isArray(result.data)) {
-      // 確保回傳資料有效，並統一讀取第一欄 (帳單年月)
-      return result.data.map(row => {
-        // 相容於物件格式或陣列格式
+      bills = result.data.map(row => {
         const key = row.billYearMonth || row['帳單年月'] || (Array.isArray(row) ? row[0] : null);
-        return { billYearMonth: key, ...row };
+        return { billYearMonth: key || '', ...row };
       }).filter(b => b.billYearMonth);
     }
-    return [];
+    
+    return {
+      success: true,
+      data: bills,
+      debugInfo: {
+        url,
+        rawResponse,
+        mappingResult: bills
+      }
+    };
   } catch (error) {
     console.error('讀取 Google Sheets 失敗:', error);
-    return [];
+    return {
+      success: false,
+      message: error.message,
+      debugInfo: {
+        url,
+        rawResponse,
+        error: error.message
+      }
+    };
   }
 };
 
 /**
  * 同步資料到 Google Sheets (增量上傳)
- * 嚴格對應 9 個欄位：
- * 0: 帳單年月, 1: 帳單起算日, 2: 帳單結算日, 3: 試算度數, 4: 試算電費, 
- * 5: 實際度數, 6: 實際電費, 7: 平均, 8: 備註
  */
 export const syncToGoogleSheets = async (gasUrl, localBills) => {
   if (!gasUrl) throw new Error('未設定 Web App URL');
   
   // 1. 獲取現有資料進行比對
-  const existingBills = await fetchExistingBills(gasUrl);
+  const fetchResult = await fetchExistingBills(gasUrl);
+  const existingBills = fetchResult.data || [];
   const existingKeys = new Set(existingBills.map(b => b.billYearMonth));
 
   // 2. 準備增量資料
@@ -59,9 +81,9 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
       const actualCostNum = parseFloat(bill.actualCost) || 0;
       const avgPrice = actualUsageNum > 0 ? (actualCostNum / actualUsageNum).toFixed(2) : '0.00';
       
-      // 依照順序建構資料 (GAS 端建議依據 Key 寫入，此處輸出標準物件)
+      // 確保所有欄位都有值，解決 undefined 問題
       return {
-        '帳單年月': formatBillKey(bill.year, bill.month),
+        '帳單年月': formatBillKey(bill.year, bill.month) || '',
         '帳單起算日': bill.startDate || '',
         '帳單結算日': bill.endDate || '',
         '試算度數': bill.calculatedUsage || 0,
@@ -74,22 +96,51 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
     });
 
   if (newBills.length === 0) {
-    return { success: true, message: '資料已是最新，無需同步。', skipped: true };
+    return { 
+      success: true, 
+      message: '資料已是最新，無需同步。', 
+      skipped: true,
+      debugInfo: fetchResult.debugInfo 
+    };
   }
 
   // 3. 執行寫入
-  const response = await fetch(gasUrl, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'write',
-      data: newBills
-    }),
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8',
-    }
-  });
+  let postRawResponse = '';
+  try {
+    const response = await fetch(gasUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'write',
+        data: newBills
+      }),
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      }
+    });
 
-  if (!response.ok) throw new Error('同步請求失敗');
-  const result = await response.json();
-  return { ...result, count: newBills.length };
+    postRawResponse = await response.text();
+    if (!response.ok) throw new Error(`同步請求失敗: ${response.status}`);
+    
+    const result = JSON.parse(postRawResponse);
+    return { 
+      ...result, 
+      count: newBills.length,
+      debugInfo: {
+        url: gasUrl,
+        rawResponse: postRawResponse,
+        mappingResult: newBills
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      debugInfo: {
+        url: gasUrl,
+        rawResponse: postRawResponse,
+        error: error.message,
+        mappingResult: newBills
+      }
+    };
+  }
 };
