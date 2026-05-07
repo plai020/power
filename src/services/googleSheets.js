@@ -28,6 +28,10 @@ export const fetchExistingBills = async (gasUrl) => {
     
     const result = JSON.parse(rawResponse);
     
+    if (result.success && !Array.isArray(result.data)) {
+      throw new Error('GAS 回傳格式錯誤：遺漏 data 陣列');
+    }
+
     let bills = [];
     if (result.success && Array.isArray(result.data)) {
       bills = result.data.map(row => {
@@ -67,6 +71,13 @@ export const syncToGoogleSheets = async (gasUrl, localBills) => {
   
   // 1. 獲取現有資料進行比對
   const fetchResult = await fetchExistingBills(gasUrl);
+  if (!fetchResult.success) {
+    return {
+      success: false,
+      message: `讀取雲端資料失敗: ${fetchResult.message}`,
+      debugInfo: fetchResult.debugInfo
+    };
+  }
   const existingBills = fetchResult.data || [];
   const existingKeys = new Set(existingBills.map(b => b.billYearMonth));
 
